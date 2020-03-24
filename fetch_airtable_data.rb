@@ -1,4 +1,5 @@
 require 'airrecord'
+require 'aws-sdk-s3'
 
 AIRTABLE_API_KEY = ENV["AIRTABLE_API_KEY"]
 BASE = "appwweCl8Lnfbf9Vs"
@@ -25,6 +26,18 @@ restaurants = Airrecord.table(AIRTABLE_API_KEY, BASE, "Restaurants").all.map(&:f
 end
 
 
-File.open(File.join(File.dirname(__FILE__), 'restaurants.json'),"w") do |f|
-  f.write(restaurants.to_json)
+restaurants_json = restaurants.to_json
+
+s3 = Aws::S3::Client.new
+stored_object = s3.get_object(bucket: 'db-supportcolumbuseats-com', key: 'restaurants.json')
+
+if stored_object.body.read != restaurants_json
+  print "Updating json in s3"
+  s3.put_object(
+    bucket: 'db-supportcolumbuseats-com',
+    key: 'restaurants.json',
+    body: restaurants_json
+  )
+else
+  print "JSON already up to date."
 end
