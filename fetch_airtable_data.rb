@@ -36,6 +36,7 @@ if stored_object.body.read != restaurants_json
   s3.put_object(
     bucket: 'db-supportcolumbuseats-com',
     key: 'restaurants.json',
+    content_type: 'application/json',
     body: restaurants_json
   )
 else
